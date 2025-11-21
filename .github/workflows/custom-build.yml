@@ -9,7 +9,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -27,12 +27,11 @@ jobs:
         working-directory: flutter
 
       - name: Build RustDesk (Windows)
-        run: |
-          flutter build windows --release
+        run: flutter build windows --release
         working-directory: flutter
 
       - name: Upload result
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: RustDesk-Windows
           path: flutter/build/windows/runner/Release/
