@@ -1,0 +1,39 @@
+name: Build RustDesk Windows EXE
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Install Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        channel: stable
+
+    - name: Enable Windows Desktop
+      run: flutter config --enable-windows-desktop
+
+    - name: Get Flutter dependencies
+      run: flutter pub get
+      working-directory: flutter
+
+    - name: Build Windows Release
+      run: flutter build windows --release
+      working-directory: flutter
+
+    - name: Upload Windows EXE
+      uses: actions/upload-artifact@v4
+      with:
+        name: rustdesk-windows-exe
+        path: flutter/build/windows/x64/runner/Release/
