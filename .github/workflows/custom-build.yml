@@ -32,7 +32,7 @@ jobs:
       # 5) Branding einbauen (Logo ersetzen)
       - name: Replace RustDesk logo
         run: |
-          Copy-Item "branding/icon.svg" -Destination "flutter/assets/images/icon.svg" -Force
+          Copy-Item "branding/icon.svg" -Destination "flutter/assets/icon.svg" -Force
 
       # 6) Deine Konfiguration einbauen
       - name: Inject custom server config
