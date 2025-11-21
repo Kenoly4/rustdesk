@@ -1,4 +1,4 @@
-name: Custom RustDesk Build
+name: Custom RustDesk Windows Build
 
 on:
   workflow_dispatch:
@@ -8,29 +8,56 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout repository (stable RustDesk version)
-        uses: actions/checkout@v3
+      # 1) Repository holen
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
-          ref: v1.1.10
+          ref: master        # baut IMMER deine aktuelle Version
+          fetch-depth: 0     # wichtig für Submodule & Flutter
 
-      - name: Install Flutter (compatible version)
+      # 2) Rust installieren
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      # 3) Flutter installieren
+      - name: Install Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.13.0"   # Kompatibel mit RustDesk 1.1.10
+          channel: stable
 
-      - name: Enable Windows Desktop
+      # 4) Windows Desktop aktivieren
+      - name: Enable Windows desktop
         run: flutter config --enable-windows-desktop
 
-      - name: Get Dependencies
+      # 5) Branding einbauen (Logo ersetzen)
+      - name: Replace RustDesk logo
+        run: |
+          Copy-Item "branding/icon.svg" -Destination "flutter/assets/images/icon.svg" -Force
+
+      # 6) Deine Konfiguration einbauen
+      - name: Inject custom server config
+        run: |
+          (Get-Content flutter/lib/config.dart).Replace(
+            "public.rustdesk.org",
+            "172.20.1.3"
+          ).Replace(
+            "DEFAULT_PUBLIC_KEY",
+            "OEd8rkAl27yqwPYFleHfaTd5RjTpRMcygephm1UCw0c="
+          ) | Set-Content flutter/lib/config.dart
+
+      # 7) Dependencies holen
+      - name: Get Flutter dependencies
         run: flutter pub get
         working-directory: flutter
 
-      - name: Build RustDesk Windows
+      # 8) Windows Build
+      - name: Build RustDesk Windows Release
         run: flutter build windows --release
         working-directory: flutter
 
-      - name: Upload Build Artifact
+      # 9) Artefakt hochladen
+      - name: Upload Windows Build
         uses: actions/upload-artifact@v4
         with:
-          name: RustDesk-Windows
+          name: RustDesk-Custom-Windows
           path: flutter/build/windows/runner/Release/
